@@ -8,7 +8,7 @@ export default class ErrorMessage extends Component{
         return(
             <div className="alert alert-danger">
                 <ul>
-                    {this.props.errors.map(err => <li>{err}</li>)}
+                    {this.props.errors.map((err , index) => <li key={index}>{err}</li>)}
                 </ul>
             </div>
         )

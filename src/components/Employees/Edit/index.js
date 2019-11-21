@@ -6,15 +6,16 @@ import ErrorMessage from "../../BaseComponents/errorMessage";
 import SuccessMessage from "../../BaseComponents/successMessage";
 
 
-export default class CompaniesEdit extends Component {
+export default class EmployeesEdit extends Component {
     api = new Api();
-    refLogoFile = React.createRef()
+
     state = {
-        name : '',
+        first_name : '',
+        last_name : '',
+        companies_id : '',
         email : '',
-        website : '',
-        logo : '',
-        currentImage : '',
+        phone : '',
+        companiesList : [],
         errors : [],
         success : false,
     };
@@ -25,48 +26,49 @@ export default class CompaniesEdit extends Component {
             this.props.history.push('/error-404')
         }
 
-        this.api.getCompany(id).then(response => {
+        this.api.getEmployee(id).then(response => {
             let data = {};
             Object.keys(response.data).map((key) => {
                 if(response.data[key] != null) {
-                    if(key !== 'logo') {
-                        return data[key] = response.data[key]
-                    }else{
-                        return data['currentImage'] = response.data[key];
-                    }
+                    return data[key] = response.data[key]
                 }else{
                     return false
                 }
             });
             this.setState({
                 ...data
-            })
+            });
+            this.api.getCompaniesForEmployee().then(res => {
+                this.setState({
+                    companiesList : res.data
+                })
+            });
         }).catch(err => {
             if(err.response.status === 404){
                 this.props.history.push('/error-404')
             }
             console.error(err.response.data)
         });
+
     }
 
     handleSubmit = (e) => {
         e.preventDefault();
         const {id} = this.props.match.params;
         const formData = new FormData();
-        formData.append('name' , this.state.name);
+        formData.append('first_name' , this.state.first_name);
+        formData.append('last_name' , this.state.last_name);
+        formData.append('companies_id' , this.state.companies_id);
         formData.append('email', this.state.email);
-        formData.append('website' , this.state.website);
-        this.state.logo && formData.append('logo', this.state.logo);
+        formData.append('phone' , this.state.phone);
         formData.append('_method' , 'PUT');
 
-        this.api.updateCompany(id , formData)
+        this.api.updateEmployee(id , formData)
             .then(response => {
                 this.setState({
                     errors : [],
                     success : response.data.success,
-                    currentImage : response.data.image
                 });
-                this.refLogoFile.current.value = '';
             })
             .catch(err => {
                 return this.setState({
@@ -76,36 +78,50 @@ export default class CompaniesEdit extends Component {
             });
     };
     handleChange = (e) => {
-        let value = e.target.value;
-        let name = e.target.name;
-        if(name === 'logo'){
-            // name = 'new_logo';
-            value = e.target.files[0];
-        }
+        const value = e.target.value;
+        const name = e.target.name;
         this.setState({
             [name]: value,
         });
     };
 
     render() {
-        console.log(this.state)
         return(
-            <div className="container mt-5 company-edit-container">
-                <Link to="/companies" className="back-link"><i className="fa fa-chevron-circle-left" /></Link>
-                <SuccessMessage success={this.state.success} message='The company has been successfully edited' />
+            <div className="container mt-5 employee-edit-container">
+                <Link to="/employees" className="back-link"><i className="fa fa-chevron-circle-left" /></Link>
+                <SuccessMessage success={this.state.success} message='The employee has been successfully edited' />
                 <ErrorMessage errors={this.state.errors}/>
 
-                <h1 className="text-center mb-3">Edit Company</h1>
+                <h1 className="text-center mb-3">Edit Employee</h1>
                 <form onSubmit={this.handleSubmit}>
                     <div className="form-group">
-                        <label htmlFor="name">Name *</label>
+                        <label htmlFor="first_name">Name *</label>
                         <input type="text"
                                className="form-control"
-                               name="name"
-                               id="name"
-                               placeholder="Company name"
-                               value={this.state.name}
+                               name="first_name"
+                               id="first_name"
+                               placeholder="First Name"
+                               value={this.state.first_name}
                                onChange={this.handleChange} />
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="last_name">Last Name *</label>
+                        <input type="text"
+                               className="form-control"
+                               name="last_name"
+                               id="last_name"
+                               placeholder="Last Name"
+                               value={this.state.last_name}
+                               onChange={this.handleChange} />
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="company">Company</label>
+                        <select name="companies_id" value={this.state.companies_id} id="companies_id" onChange={this.handleChange}  className='custom-select'>
+                            <option value="">Select Company</option>
+                            {this.state.companiesList.map(company =>
+                                <option key={company.id} value={company.id}>{company.name}</option>
+                            )}
+                        </select>
                     </div>
                     <div className="form-group">
                         <label htmlFor="email">Email</label>
@@ -118,25 +134,13 @@ export default class CompaniesEdit extends Component {
                                onChange={this.handleChange} />
                     </div>
                     <div className="form-group">
-                        <label htmlFor="logo">Logo</label>
-                        <div>
-                        { this.state.currentImage && <img src={this.api.getImage(this.state.currentImage)} alt={this.state.name} />}
-                        <input type="file"
-                               name="logo"
-                               id="logo"
-                               onChange={this.handleChange}
-                               ref = {this.refLogoFile}
-                        />
-                        </div>
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="website">Website</label>
+                        <label htmlFor="phone">Phone</label>
                         <input type="text"
                                className="form-control"
-                               name="website"
-                               id="website"
-                               placeholder="Website"
-                               value={this.state.website}
+                               name="phone"
+                               id="phone"
+                               placeholder="Phone"
+                               value={this.state.phone}
                                onChange={this.handleChange} />
                     </div>
                     <button type="submit" className="btn btn-success w-100">Edit</button>

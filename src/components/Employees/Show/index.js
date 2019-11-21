@@ -5,7 +5,7 @@ import './index.scss';
 
 
 
-export default class CompaniesShow extends Component {
+export default class EmployeesShow extends Component {
     api = new Api();
     state = {};
     componentDidMount() {
@@ -13,7 +13,7 @@ export default class CompaniesShow extends Component {
         if(isNaN(id)){
             this.props.history.push('/error-404')
         }
-        this.api.getCompany(id).then(response => {
+        this.api.getEmployee(id).then(response => {
             let data = {};
             Object.keys(response.data).map((key) => {
                 return data[key] = response.data[key]
@@ -30,20 +30,18 @@ export default class CompaniesShow extends Component {
     }
 
     render() {
-        const {name , email , website , logo , created_at , updated_at} = this.state;
+        const {first_name , last_name , companies_id , email , phone , created_at , updated_at} = this.state;
         return(
-            <div className="container company-show-container">
-                <Link to="/companies" className="back-link"><i className="fa fa-chevron-circle-left"/></Link>
+            <div className="container employee-show-container">
+                <Link to="/employees" className="back-link"><i className="fa fa-chevron-circle-left"/></Link>
                 <div className="row">
                     <div className="card bg-light pt-3 pb-3 col-6 m-auto">
-                        <h1 className="text-center mb-3">{name}</h1>
+                        <h1 className="text-center mb-3">{first_name} {last_name}</h1>
+                        <div className="text-center">Company Id : {companies_id}</div>
                         <div className="text-center">Email : <a href={`mailto:${email}`}>{email}</a></div>
-                        <div className="text-center">Website : <a href={website} target="_blank" rel='noopener noreferrer'>{website}</a></div>
+                        <div className="text-center">Phone : <a href={`tel:${phone}`}>{phone}</a></div>
                         <div className="text-center">Created At : {created_at}</div>
                         <div className="text-center">Updated At : {updated_at}</div>
-                        <div className="text-center">
-                            {logo && <img src={this.api.getImage(logo)} alt={name} />}
-                        </div>
                     </div>
                 </div>
             </div>

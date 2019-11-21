@@ -1,14 +1,14 @@
 import React , {Component} from 'react';
-import './index.css';
+import './index.scss';
 import {Link} from 'react-router-dom';
 import Api from "../../../api";
-import ErrorMessage from "../../Messages/error";
-import SuccessMessage from "../../Messages/success";
+import ErrorMessage from "../../BaseComponents/errorMessage";
+import SuccessMessage from "../../BaseComponents/successMessage";
 
 
 export default class CompaniesCreate extends Component {
     api = new Api();
-
+    refLogoFile = React.createRef()
     state = {
         name : '',
         email : '',
@@ -40,11 +40,12 @@ export default class CompaniesCreate extends Component {
                     errors : [],
                     success : response.data.success
                 });
-                document.querySelector('#logo').value = '';
+                this.refLogoFile.current.value = '';
             })
             .catch(err => {
                 return this.setState({
                     errors : Object.values(err.response.data.errors),
+                    success : false,
                 });
             });
     };
@@ -94,7 +95,9 @@ export default class CompaniesCreate extends Component {
                                className="custom-file"
                                name="logo"
                                id="logo"
-                               onChange={this.handleChange} />
+                               onChange={this.handleChange}
+                               ref = {this.refLogoFile}
+                        />
                     </div>
                     <div className="form-group">
                         <label htmlFor="website">Website</label>
