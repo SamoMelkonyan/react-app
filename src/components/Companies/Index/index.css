@@ -1,0 +1,14 @@
+.companies-container .actions span  ,.companies-container .actions a{
+    color: white;
+    font-size: 1.1em;
+    margin: 0 3px;
+    transition: 0.3s color;
+    cursor: pointer;
+}
+
+.companies-container .actions span:hover , .companies-container .actions a:hover{
+    color: #b2b2b2;
+}
+.companies-container table img{
+    height: 25px;
+}
