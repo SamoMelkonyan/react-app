@@ -1,11 +1,7 @@
-import React , {Component} from 'react';
-import {Route , Redirect} from 'react-router-dom';
+import React, { Component } from "react";
+import { Route, Redirect } from "react-router-dom";
 
-
-
-export default class PrivateRouter extends Component{
-
-
+export default class PrivateRouter extends Component {
     state = {
         isLoggedIn: true,
         user: {}
@@ -16,22 +12,26 @@ export default class PrivateRouter extends Component{
         if (state) {
             let AppState = JSON.parse(state);
             this.setState({ isLoggedIn: AppState.isLoggedIn, user: AppState });
-        }else{
+        } else {
             this.setState({
-                isLoggedIn : false,
-            })
+                isLoggedIn: false
+            });
         }
     }
 
-
     render() {
         const { component: Component, ...rest } = this.props;
-        return(
-            <Route {...rest} render={(props) => (
-                this.state.isLoggedIn ? <Component {...props} /> : <Redirect to='/login'/>
-            )} />
-        )
+        return (
+            <Route
+                {...rest}
+                render={props =>
+                    this.state.isLoggedIn ? (
+                        <Component {...props} />
+                    ) : (
+                        <Redirect to="/login" />
+                    )
+                }
+            />
+        );
     }
 }
-
-
