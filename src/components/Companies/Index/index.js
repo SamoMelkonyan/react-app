@@ -46,7 +46,6 @@ export default class Companies extends Component {
         }
         this.api.destroyCompany(id).then(response => {
             let data = [...this.state.companies.data];
-            console.log(response.success)
             data = data.filter(company => company.id !== id);
             this.setState({
                 companies : {
@@ -56,7 +55,7 @@ export default class Companies extends Component {
                 }
             })
         }).catch(err => {
-            console.log(err)
+            console.error(err.response.data)
         })
     }
     render() {

@@ -53,4 +53,8 @@ export default class Api {
     getImage(image){
         return this._imageURL + image
     }
+
+    signIn(data){
+        return axios.post(`${this._apiURL}user/login` , data)
+    }
 }

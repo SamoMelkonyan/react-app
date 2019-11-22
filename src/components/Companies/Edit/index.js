@@ -8,7 +8,7 @@ import SuccessMessage from "../../BaseComponents/successMessage";
 
 export default class CompaniesEdit extends Component {
     api = new Api();
-    refLogoFile = React.createRef()
+    refLogoFile = React.createRef();
     state = {
         name : '',
         email : '',
@@ -79,7 +79,6 @@ export default class CompaniesEdit extends Component {
         let value = e.target.value;
         let name = e.target.name;
         if(name === 'logo'){
-            // name = 'new_logo';
             value = e.target.files[0];
         }
         this.setState({
@@ -88,7 +87,6 @@ export default class CompaniesEdit extends Component {
     };
 
     render() {
-        console.log(this.state)
         return(
             <div className="container mt-5 company-edit-container">
                 <Link to="/companies" className="back-link"><i className="fa fa-chevron-circle-left" /></Link>
