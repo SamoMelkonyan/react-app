@@ -1,17 +1,15 @@
-import React , {Component} from 'react';
+import React, { Component } from "react";
 
-import './index.scss';
+import "./index.scss";
 
 export default class Welcome extends Component {
     render() {
-        return(
+        return (
             <div className="flex-center position-ref full-height">
                 <div className="content">
-                    <div className="title m-b-md">
-                        Laravel + React
-                    </div>
+                    <div className="title m-b-md">Laravel + React</div>
                 </div>
             </div>
-        )
+        );
     }
 }

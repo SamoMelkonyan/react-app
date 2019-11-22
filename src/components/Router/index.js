@@ -1,9 +1,8 @@
-import React , {Component} from 'react';
-import {BrowserRouter , Switch } from 'react-router-dom';
+import React, { Component } from "react";
+import { BrowserRouter, Switch } from "react-router-dom";
 
 import Header from "../Header";
 import ErrorPage from "../Error-404";
-
 
 import PrivateRouter from "./private";
 import PublicRouter from "./public";
@@ -24,7 +23,7 @@ import EmployeesShow from "../Employees/Show";
 import EmployeesEdit from "../Employees/Edit";
 import Api from "../../api";
 
-export default class Router extends Component{
+export default class Router extends Component {
     api = new Api();
     state = {
         isLoggedIn: false,
@@ -35,7 +34,10 @@ export default class Router extends Component{
         let state = localStorage["appState"];
         if (state) {
             let AppState = JSON.parse(state);
-            this.setState({ isLoggedIn: AppState.isLoggedIn, user: AppState.user });
+            this.setState({
+                isLoggedIn: AppState.isLoggedIn,
+                user: AppState.user
+            });
         }
     }
 
@@ -44,7 +46,8 @@ export default class Router extends Component{
         formData.append("email", email);
         formData.append("password", password);
 
-        this.api.signIn(formData)
+        this.api
+            .signIn(formData)
             .then(response => {
                 return response;
             })
@@ -76,7 +79,7 @@ export default class Router extends Component{
     };
 
     _logoutUser = () => {
-        if(!window.confirm('Logout ?')){
+        if (!window.confirm("Logout ?")) {
             return false;
         }
         let appState = {
@@ -85,32 +88,74 @@ export default class Router extends Component{
         };
         localStorage["appState"] = JSON.stringify(appState);
         this.setState(appState);
-        window.location.pathname = '/';
+        window.location.pathname = "/";
     };
 
     render() {
-        return(
+        return (
             <BrowserRouter>
-                <Header userName={this.state.user && this.state.user.name} isLoggedIn={this.state.isLoggedIn} logoutUser={this._logoutUser} />
+                <Header
+                    userName={this.state.user && this.state.user.name}
+                    isLoggedIn={this.state.isLoggedIn}
+                    logoutUser={this._logoutUser}
+                />
                 <Switch>
-                    <PublicRouter  path='/' exact component={Welcome}/>
-                    <PublicRouter  path='/login' exact component={Login} isLoggedIn={this.state.isLoggedIn} loginUser={this._loginUser} />
+                    <PublicRouter path="/" exact component={Welcome} />
+                    <PublicRouter
+                        path="/login"
+                        exact
+                        component={Login}
+                        isLoggedIn={this.state.isLoggedIn}
+                        loginUser={this._loginUser}
+                    />
 
-                    <PrivateRouter path='/home' exact component={Home}/>
+                    <PrivateRouter path="/home" exact component={Home} />
 
-                    <PrivateRouter path='/companies' exact component={Companies}/>
-                    <PrivateRouter path='/companies/create' exact component={CompaniesCreate} />
-                    <PrivateRouter path='/companies/:id' exact component={CompaniesShow} />
-                    <PrivateRouter path='/companies/:id/edit' exact component={CompaniesEdit} />
+                    <PrivateRouter
+                        path="/companies"
+                        exact
+                        component={Companies}
+                    />
+                    <PrivateRouter
+                        path="/companies/create"
+                        exact
+                        component={CompaniesCreate}
+                    />
+                    <PrivateRouter
+                        path="/companies/:id"
+                        exact
+                        component={CompaniesShow}
+                    />
+                    <PrivateRouter
+                        path="/companies/:id/edit"
+                        exact
+                        component={CompaniesEdit}
+                    />
 
-                    <PrivateRouter path='/employees' exact component={Employees}/>
-                    <PrivateRouter path='/employees/create' exact component={EmployeesCreate}/>
-                    <PrivateRouter path='/employees/:id' exact component={EmployeesShow} />
-                    <PrivateRouter path='/employees/:id/edit' exact component={EmployeesEdit} />
+                    <PrivateRouter
+                        path="/employees"
+                        exact
+                        component={Employees}
+                    />
+                    <PrivateRouter
+                        path="/employees/create"
+                        exact
+                        component={EmployeesCreate}
+                    />
+                    <PrivateRouter
+                        path="/employees/:id"
+                        exact
+                        component={EmployeesShow}
+                    />
+                    <PrivateRouter
+                        path="/employees/:id/edit"
+                        exact
+                        component={EmployeesEdit}
+                    />
 
-                    <PublicRouter path="*" component={ErrorPage}/>
+                    <PublicRouter path="*" component={ErrorPage} />
                 </Switch>
             </BrowserRouter>
-        )
+        );
     }
 }
