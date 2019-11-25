@@ -15,9 +15,9 @@ export default class Api {
                         localStorage.removeItem("token");
                         window.location.href = "/login";
                     }
-                    throw error;
                 }catch (e) {
-                    window.location.href = "/";
+                    localStorage.removeItem("token");
+                    window.location.href = "/login";
                 }
             }
         );
