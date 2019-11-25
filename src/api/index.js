@@ -10,11 +10,15 @@ export default class Api {
         this.Auth.interceptors.response.use(
             response => response,
             error => {
-                if (error.response.status === 401) {
-                    localStorage.removeItem("token");
-                    window.location.href = "/login";
+                try{
+                    if (error.response.status === 401) {
+                        localStorage.removeItem("token");
+                        window.location.href = "/login";
+                    }
+                    throw error;
+                }catch (e) {
+                    window.location.href = "/";
                 }
-                throw error;
             }
         );
     }
