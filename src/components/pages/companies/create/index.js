@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import {connect} from "react-redux";
 import "./index.scss";
 import Api from "api";
 import ErrorMessage from "components/base-components/error-message";
@@ -8,8 +9,9 @@ import TextInput from "components/base-components/text-input";
 import SuccessButton from "components/base-components/success-button";
 import FileInput from "components/base-components/file-input";
 import FormTitle from "components/base-components/form-title";
+import { createCompany } from "store/actions/companies";
 
-export default class CompaniesCreate extends Component {
+class CompaniesCreate extends Component {
     api = new Api();
     refLogoFile = React.createRef();
     state = {
@@ -17,42 +19,16 @@ export default class CompaniesCreate extends Component {
         email: "",
         website: "",
         logo: "",
-        errors: [],
-        success: false
     };
+
+    componentDidMount() {
+        this.props.companies.success = false;
+        this.props.companies.errors = [];
+    }
 
     handleSubmit = e => {
         e.preventDefault();
-
-        const formData = new FormData();
-        formData.append("name", this.state.name);
-        formData.append("email", this.state.email);
-        formData.append("website", this.state.website);
-        if (this.state.logo) {
-            formData.append("logo", this.state.logo);
-        }
-
-        this.api
-            .setCompany(formData)
-            .then(response => {
-                if(response.status === 200){
-                    this.setState({
-                        name: "",
-                        email: "",
-                        website: "",
-                        logo: "",
-                        errors: [],
-                        success: true
-                    });
-                    this.refLogoFile.current.value = "";
-                }
-            })
-            .catch(err => {
-                return this.setState({
-                    errors: Object.values(err.response.data.errors),
-                    success: false
-                });
-            });
+        this.props.createCompany(this.state);
     };
     handleChange = e => {
         let value = e.target.value;
@@ -66,14 +42,15 @@ export default class CompaniesCreate extends Component {
     };
 
     render() {
+        const {success , errors} = this.props.companies;
         return (
             <div className="container mt-5">
                 <BackLink url='/companies'/>
                 <SuccessMessage
-                    success={this.state.success}
+                    success={success}
                     message="The company has been successfully added"
                 />
-                <ErrorMessage errors={this.state.errors} />
+                <ErrorMessage errors={errors} />
                 <FormTitle title='Create Company'/>
                 <form onSubmit={this.handleSubmit}>
                     <TextInput
@@ -93,6 +70,7 @@ export default class CompaniesCreate extends Component {
                         title='Logo'
                         name='logo'
                         refFile={this.refLogoFile}
+                        onChange={this.handleChange}
                     />
                     <TextInput
                         title='Website'
@@ -106,3 +84,21 @@ export default class CompaniesCreate extends Component {
         );
     }
 }
+
+
+const mapStateToProps = state => {
+    return {
+        companies: state.companies
+    };
+};
+
+const mapDispatchToProps = dispatch => {
+    return {
+        createCompany: data => dispatch(createCompany(data))
+        /*  onDelete: id => {
+          dispatch(deletePost(id));
+        } */
+    };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(CompaniesCreate);

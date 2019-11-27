@@ -3,22 +3,21 @@ import axios from "axios";
 export default class Api {
     _apiURL = "http://127.0.0.1:8000/api/";
     _imageURL = "http://127.0.0.1:8000/storage/";
-    _token = localStorage["token"] && JSON.parse(localStorage["token"]).access_token;
+
+    getToken(){
+        return localStorage["token"] && JSON.parse(localStorage["token"]).access_token
+    }
 
     constructor() {
         this.Auth = axios.create();
         this.Auth.interceptors.response.use(
             response => response,
             error => {
-                try{
-                    if (error.response.status === 401) {
-                        localStorage.removeItem("token");
-                        window.location.href = "/login";
-                    }
-                }catch (e) {
+                if (error.response.status === 401) {
                     localStorage.removeItem("token");
                     window.location.href = "/login";
                 }
+                throw error;
             }
         );
     }
@@ -27,29 +26,29 @@ export default class Api {
     getCompanies(page = 1) {
         return this.Auth.get(`${this._apiURL}companies?page=${page}` , {
             headers: {
-                'Authorization': `bearer  ${this._token}`
+                'Authorization': `bearer  ${this.getToken()}`
             }
         });
     }
     getCompany(id) {
         return this.Auth.get(`${this._apiURL}companies/${id}` , {
             headers: {
-                'Authorization': `bearer  ${this._token}`
+                'Authorization': `bearer  ${this.getToken()}`
             }
         });
     }
     setCompany(data) {
-        return this.Auth.post(`${this._apiURL}companies?token=${this._token}`, data, {
+        return this.Auth.post(`${this._apiURL}companies`, data, {
             headers: {
-                'Authorization': `bearer  ${this._token}`,
-                "Content-Type": "multipart/form-data"
+                'Authorization': `bearer  ${this.getToken()}`,
+                "Content-Type": "multipart/form-data",
             }
         });
     }
     updateCompany(id, data) {
         return this.Auth.post(`${this._apiURL}companies/${id}`, data, {
             headers: {
-                'Authorization': `bearer  ${this._token}`,
+                'Authorization': `bearer  ${this.getToken()}`,
                 "Content-Type": "multipart/form-data"
             }
         });
@@ -57,7 +56,7 @@ export default class Api {
     destroyCompany(id) {
         return this.Auth.delete(`${this._apiURL}companies/${id}` , {
             headers: {
-                'Authorization': `bearer  ${this._token}`
+                'Authorization': `bearer  ${this.getToken()}`
             }
         });
     }
@@ -66,42 +65,42 @@ export default class Api {
     getEmployees(page = 1) {
         return this.Auth.get(`${this._apiURL}employees?page=${page}` , {
             headers: {
-                'Authorization': `bearer  ${this._token}`
+                'Authorization': `bearer  ${this.getToken()}`
             }
         });
     }
     getCompaniesForEmployee() {
         return this.Auth.get(`${this._apiURL}employees/create` , {
             headers: {
-                'Authorization': `bearer  ${this._token}`
+                'Authorization': `bearer  ${this.getToken()}`
             }
         });
     }
     getEmployee(id) {
         return this.Auth.get(`${this._apiURL}employees/${id}` , {
             headers: {
-                'Authorization': `bearer  ${this._token}`
+                'Authorization': `bearer  ${this.getToken()}`
             },
         });
     }
     setEmployee(data) {
         return this.Auth.post(`${this._apiURL}employees`, data , {
             headers: {
-                'Authorization': `bearer  ${this._token}`
+                'Authorization': `bearer  ${this.getToken()}`
             }
         });
     }
     updateEmployee(id, data) {
         return this.Auth.post(`${this._apiURL}employees/${id}`, data , {
             headers: {
-                'Authorization': `bearer  ${this._token}`
+                'Authorization': `bearer  ${this.getToken()}`
             }
         });
     }
     destroyEmployee(id) {
         return this.Auth.delete(`${this._apiURL}employees/${id}` , {
             headers: {
-                'Authorization': `bearer  ${this._token}`
+                'Authorization': `bearer  ${this.getToken()}`
             }
         });
     }

@@ -129,6 +129,7 @@ export default class CompaniesEdit extends Component {
                             this.state.currentImage
                         )}
                         alt={this.state.name}
+                        onChange={this.handleChange}
                     />
                     <TextInput
                         title='Website'

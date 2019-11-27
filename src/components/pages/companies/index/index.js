@@ -1,76 +1,30 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
+import { connect } from "react-redux";
 import "./index.scss";
-import Api from "api";
+
 import CompaniesItem from "./item";
 import Paginate from "components/base-components/paginate";
 import SuccessMessage from "components/base-components/success-message";
+import { getCompanies , deleteCompany } from "store/actions/companies";
+import ErrorMessage from "../../../base-components/error-message";
 
-export default class Companies extends Component {
-    api = new Api();
-    state = {
-        companies: {
-            data: [],
-            currentPage: null,
-            total: null,
-            removed: false
-        }
-    };
+class Companies extends Component {
+
     componentDidMount() {
-        this.api.getCompanies().then(res => {
-            this.setState({
-                companies: {
-                    data: res.data.data,
-                    currentPage: res.data.current_page,
-                    total: res.data.last_page,
-                    removed: false
-                }
-            });
-        });
+        this.props.getCompanies();
     }
-    paginate(page) {
-        this.api.getCompanies(page).then(res => {
-            this.setState({
-                companies: {
-                    data: res.data.data,
-                    currentPage: res.data.current_page,
-                    total: res.data.last_page,
-                    removed: false
-                }
-            });
-        });
-    }
-    deleteCompany(id) {
-        if (!window.confirm("Are you sure?")) {
-            return false;
-        }
-        this.api
-            .destroyCompany(id)
-            .then(response => {
-                if(response.status === 200){
-                    let data = [...this.state.companies.data];
-                    data = data.filter(company => company.id !== id);
-                    this.setState({
-                        companies: {
-                            ...this.state.companies,
-                            data,
-                            removed: true
-                        }
-                    });
-                }
-            })
-            .catch(err => {
-                console.error(err.response.data);
-            });
-    }
+
     render() {
-        const { data, total, currentPage, removed } = this.state.companies;
+        const {data : {last_page , current_page , data} , success , errors} = this.props.companies;
+
         return (
             <div className="container companies-container mt-5">
                 <SuccessMessage
                     message="The company has been successfully removed"
-                    success={removed}
+                    success={success}
                 />
+                <ErrorMessage errors={errors} />
                 <Link to="/companies/create" className="btn btn-success mb-1">
                     Create Company
                 </Link>
@@ -89,7 +43,12 @@ export default class Companies extends Component {
                         <tbody>
                             <CompaniesItem
                                 items={data}
-                                delete={id => this.deleteCompany(id)}
+                                delete={id => {
+                                    if(!window.confirm('Are you sure?')){
+                                        return false
+                                    }
+                                    return this.props.deleteCompany(id)
+                                }}
                             />
                         </tbody>
                     </table>
@@ -98,9 +57,9 @@ export default class Companies extends Component {
                     <nav aria-label="Page navigation example">
                         <ul className="pagination">
                             <Paginate
-                                total={total}
-                                currentPage={currentPage}
-                                click={page => this.paginate(page)}
+                                total={last_page}
+                                currentPage={current_page}
+                                click={page => this.props.getCompanies(page)}
                             />
                         </ul>
                     </nav>
@@ -109,3 +68,18 @@ export default class Companies extends Component {
         );
     }
 }
+
+const mapStateToProps = state => {
+    return {
+        companies: state.companies
+    };
+};
+
+const mapDispatchToProps = dispatch => {
+    return {
+        getCompanies: page => {dispatch(getCompanies(page))},
+        deleteCompany: id => {dispatch(deleteCompany(id))}
+    };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Companies);
