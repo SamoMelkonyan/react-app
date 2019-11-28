@@ -26,7 +26,7 @@ class CompaniesShow extends Component {
             name,
             email,
             website,
-            logo,
+            currentImage : logo,
             created_at,
             updated_at,
         } = this.props.companies.data;
