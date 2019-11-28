@@ -8,81 +8,56 @@ import TextInput from "components/base-components/text-input";
 import SuccessButton from "components/base-components/success-button";
 import FileInput from "components/base-components/file-input";
 import FormTitle from "components/base-components/form-title";
+import {connect} from "react-redux";
+import {updateCompany , showCompany} from "store/actions/companies";
 
-export default class CompaniesEdit extends Component {
+class CompaniesEdit extends Component {
     api = new Api();
-    refLogoFile = React.createRef();
+
     state = {
         name: "",
         email: "",
         website: "",
         logo: "",
         currentImage: "",
-        errors: [],
-        success: false
     };
+
+    UNSAFE_componentWillReceiveProps(nextProps) {
+        if(nextProps.companies.success){
+            nextProps.companies.errors = [];
+        }
+        let data = {};
+        Object.keys(nextProps.companies.data).map(key => {
+            if (nextProps.companies.data[key] != null) {
+                    return data[key] = nextProps.companies.data[key];
+            } else {
+                    return false;
+            }
+        });
+        this.setState({
+            ...data
+        });
+
+    }
 
     componentDidMount() {
         const { id } = this.props.match.params;
         if (isNaN(id)) {
             this.props.history.push("/error-404");
         }
+        this.props.showCompany(id);
+    }
 
-        this.api
-            .getCompany(id)
-            .then(response => {
-                let data = {};
-                Object.keys(response.data).map(key => {
-                    if (response.data[key] != null) {
-                        if (key !== "logo") {
-                            return (data[key] = response.data[key]);
-                        } else {
-                            return (data["currentImage"] = response.data[key]);
-                        }
-                    } else {
-                        return false;
-                    }
-                });
-                this.setState({
-                    ...data
-                });
-            })
-            .catch(err => {
-                if (err.response.status === 404) {
-                    this.props.history.push("/error-404");
-                }
-                console.error(err.response.data);
-            });
+    componentDidUpdate() {
+        if(!this.props.companies.hasPage){
+            this.props.history.push('/error-404');
+        }
     }
 
     handleSubmit = e => {
         e.preventDefault();
         const { id } = this.props.match.params;
-        const formData = new FormData();
-        formData.append("name", this.state.name);
-        formData.append("email", this.state.email);
-        formData.append("website", this.state.website);
-        this.state.logo && formData.append("logo", this.state.logo);
-        formData.append("_method", "PUT");
-
-        this.api
-            .updateCompany(id, formData)
-            .then(response => {
-                if(response.status === 200){
-                    this.setState({
-                        errors: [],
-                        success: true,
-                        currentImage: response.data.image
-                    });
-                    this.refLogoFile.current.value = "";
-                }
-            })
-            .catch(err => {
-                return this.setState({
-                    errors: Object.values(err.response.data.errors),
-                    success: false
-                });
-            });
+        this.props.updateCompany(id , this.state);
     };
     handleChange = e => {
         let value = e.target.value;
@@ -96,45 +71,45 @@ export default class CompaniesEdit extends Component {
     };
 
     render() {
+        const {name, email, currentImage, website} = this.state;
         return (
             <div className="container mt-5 company-edit-container">
                 <BackLink url='/companies'/>
                 <SuccessMessage
-                    success={this.state.success}
+                    success={this.props.companies.success}
                     message="The company has been successfully edited"
                 />
-                <ErrorMessage errors={this.state.errors} />
+                <ErrorMessage errors={this.props.companies.errors} />
 
                 <FormTitle title='Edit Company'/>
                 <form onSubmit={this.handleSubmit}>
                     <TextInput
                         title='Company Name'
                         name='name'
-                        value={this.state.name}
+                        value={name}
                         onChange={this.handleChange}
                         required
                     />
                     <TextInput
                         title='Email'
                         name='email'
-                        value={this.state.email}
+                        value={email}
                         onChange={this.handleChange}
+                        type='email'
                     />
                     <FileInput
                         title='Logo'
                         name='logo'
                         refFile={this.refLogoFile}
-                        currentImg={this.state.currentImage}
-                        src={this.api.getImage(
-                            this.state.currentImage
-                        )}
+                        currentImg={currentImage}
+                        src={this.api.getImage(currentImage)}
                         alt={this.state.name}
                         onChange={this.handleChange}
                     />
                     <TextInput
                         title='Website'
                         name='website'
-                        value={this.state.website}
+                        value={website}
                         onChange={this.handleChange}
                     />
                     <SuccessButton title='Edit Company'/>
@@ -143,3 +118,19 @@ export default class CompaniesEdit extends Component {
         );
     }
 }
+
+
+const mapStateToProps = state => {
+    return {
+        companies: state.companies
+    };
+};
+
+const mapDispatchToProps = dispatch => {
+    return {
+        updateCompany: (id, data) => dispatch(updateCompany(id, data)),
+        showCompany: id => dispatch(showCompany(id))
+    };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(CompaniesEdit);

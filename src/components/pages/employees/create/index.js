@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import "./index.scss";
-import Api from "api";
 import ErrorMessage from "components/base-components/error-message";
 import SuccessMessage from "components/base-components/success-message";
 import BackLink from "components/base-components/back-link";
@@ -8,79 +7,58 @@ import TextInput from "components/base-components/text-input";
 import SuccessButton from "components/base-components/success-button";
 import FormTitle from "components/base-components/form-title";
 import SelectInput from "components/base-components/select-input";
+import { createEmployee } from "store/actions/employees";
+import {connect} from "react-redux";
+import {getAllCompanies} from "store/actions/companies";
 
-export default class EmployeesCreate extends Component {
-    api = new Api();
-
+class EmployeesCreate extends Component {
     state = {
         first_name: "",
         last_name: "",
         companies_id: "",
         email: "",
         phone: "",
-        companiesList: [],
-        errors: [],
-        success: false
     };
 
     componentDidMount() {
-        this.api.getCompaniesForEmployee().then(res => {
-            this.setState({
-                companiesList: res.data
-            });
-        });
+        this.props.employees.success = false;
+        this.props.employees.errors = [];
     }
 
-    handleSubmit = e => {
+    handleSubmit = async e => {
         e.preventDefault();
-
-        const formData = new FormData();
-        formData.append("first_name", this.state.first_name);
-        formData.append("last_name", this.state.last_name);
-        formData.append("companies_id", this.state.companies_id);
-        formData.append("email", this.state.email);
-        formData.append("phone", this.state.phone);
-
-        this.api
-            .setEmployee(formData)
-            .then(response => {
-                if(response.status === 200){
-                    this.setState({
-                        first_name: "",
-                        last_name: "",
-                        companies_id: "",
-                        email: "",
-                        phone: "",
-                        errors: [],
-                        success: true
-                    });
-                }
-            })
-            .catch(err => {
-                return this.setState({
-                    errors: Object.values(err.response.data.errors),
-                    success: false
-                });
-            });
+        await this.props.createEmployee(this.state);
     };
     handleChange = e => {
-        const value = e.target.value;
+        let value = e.target.value;
         const name = e.target.name;
-
         this.setState({
             [name]: value
         });
     };
+    UNSAFE_componentWillReceiveProps(nextProps) {
+        if(nextProps.employees.success) {
+            nextProps.employees.errors = [];
+            this.setState({
+                first_name: "",
+                last_name: "",
+                companies_id: "",
+                email: "",
+                phone: "",
+            });
+        }
+    }
 
     render() {
+        const {success , errors} = this.props.employees;
         return (
             <div className="container mt-5">
                 <BackLink url='/employees'/>
                 <SuccessMessage
-                    success={this.state.success}
+                    success={success}
                     message="The employee has been successfully added"
                 />
-                <ErrorMessage errors={this.state.errors} />
+                <ErrorMessage errors={errors} />
 
                 <FormTitle title='Add Employee' />
                 <form onSubmit={this.handleSubmit}>
@@ -102,7 +80,7 @@ export default class EmployeesCreate extends Component {
                         title='Company'
                         name='companies_id'
                         value={this.state.companies_id}
-                        data={this.state.companiesList}
+                        data={this.props.companies.data}
                         onChange={this.handleChange}
                     />
                     <TextInput
@@ -124,3 +102,21 @@ export default class EmployeesCreate extends Component {
         );
     }
 }
+
+
+
+const mapStateToProps = state => {
+    return {
+        employees: state.employees,
+        companies: state.companies
+    };
+};
+
+const mapDispatchToProps = dispatch => {
+    return {
+        createEmployee: data => dispatch(createEmployee(data)),
+        getAllCompanies: dispatch(getAllCompanies())
+    };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(EmployeesCreate);

@@ -30,6 +30,13 @@ export default class Api {
             }
         });
     }
+    getAllCompanies() {
+        return this.Auth.get(`${this._apiURL}companies/all` , {
+            headers: {
+                'Authorization': `bearer  ${this.getToken()}`
+            }
+        });
+    }
     getCompany(id) {
         return this.Auth.get(`${this._apiURL}companies/${id}` , {
             headers: {
@@ -64,13 +71,6 @@ export default class Api {
     // employees
     getEmployees(page = 1) {
         return this.Auth.get(`${this._apiURL}employees?page=${page}` , {
-            headers: {
-                'Authorization': `bearer  ${this.getToken()}`
-            }
-        });
-    }
-    getCompaniesForEmployee() {
-        return this.Auth.get(`${this._apiURL}employees/create` , {
             headers: {
                 'Authorization': `bearer  ${this.getToken()}`
             }

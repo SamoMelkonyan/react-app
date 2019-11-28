@@ -1,6 +1,6 @@
 import React, { Component } from "react";
+import {connect} from "react-redux";
 import "./index.scss";
-import Api from "api";
 import ErrorMessage from "components/base-components/error-message";
 import SuccessMessage from "components/base-components/success-message";
 import BackLink from "components/base-components/back-link";
@@ -8,9 +8,10 @@ import TextInput from "components/base-components/text-input";
 import SuccessButton from "components/base-components/success-button";
 import FormTitle from "components/base-components/form-title";
 import SelectInput from "components/base-components/select-input";
+import {updateEmployee , showEmployee} from "store/actions/employees";
+import {getAllCompanies} from "store/actions/companies";
 
-export default class EmployeesEdit extends Component {
-    api = new Api();
+class EmployeesEdit extends Component {
 
     state = {
         first_name: "",
@@ -18,72 +19,43 @@ export default class EmployeesEdit extends Component {
         companies_id: "",
         email: "",
         phone: "",
-        companiesList: [],
-        errors: [],
-        success: false
     };
+    UNSAFE_componentWillReceiveProps(nextProps) {
+        if(nextProps.employees.success){
+            nextProps.employees.errors = [];
+        }
+        let data = {};
+        Object.keys(nextProps.employees.data).map(key => {
+            if (nextProps.employees.data[key] != null) {
+                return data[key] = nextProps.employees.data[key];
+            } else {
+                return false;
+            }
+        });
+        this.setState({
+            ...data
+        });
+
+    }
 
     componentDidMount() {
         const { id } = this.props.match.params;
         if (isNaN(id)) {
             this.props.history.push("/error-404");
         }
+        this.props.showEmployee(id);
+    }
 
-        this.api
-            .getEmployee(id)
-            .then(response => {
-                let data = {};
-                Object.keys(response.data).map(key => {
-                    if (response.data[key] != null) {
-                        return (data[key] = response.data[key]);
-                    } else {
-                        return false;
-                    }
-                });
-                this.setState({
-                    ...data
-                });
-                this.api.getCompaniesForEmployee().then(res => {
-                    this.setState({
-                        companiesList: res.data
-                    });
-                });
-            })
-            .catch(err => {
-                if (err.response.status === 404) {
-                    this.props.history.push("/error-404");
-                }
-                console.error(err.response.data);
-            });
+    componentDidUpdate( ) {
+        if(!this.props.employees.hasPage){
+            this.props.history.push('/error-404');
+        }
     }
 
     handleSubmit = e => {
         e.preventDefault();
         const { id } = this.props.match.params;
-        const formData = new FormData();
-        formData.append("first_name", this.state.first_name);
-        formData.append("last_name", this.state.last_name);
-        formData.append("companies_id", this.state.companies_id);
-        formData.append("email", this.state.email);
-        formData.append("phone", this.state.phone);
-        formData.append("_method", "PUT");
-
-        this.api
-            .updateEmployee(id, formData)
-            .then(response => {
-                if(response.status === 200){
-                    this.setState({
-                        errors: [],
-                        success: true
-                    });
-                }
-            })
-            .catch(err => {
-                return this.setState({
-                    errors: Object.values(err.response.data.errors),
-                    success: false
-                });
-            });
+        this.props.updateEmployee(id , this.state);
     };
     handleChange = e => {
         const value = e.target.value;
@@ -94,14 +66,17 @@ export default class EmployeesEdit extends Component {
     };
 
     render() {
+        if(this.props.companies.data.length === undefined) {
+            this.props.companies.data = [];
+        }
         return (
             <div className="container mt-5">
                 <BackLink url='/employees'/>
                 <SuccessMessage
-                    success={this.state.success}
-                    message="The employee has been successfully added"
+                    success={this.props.employees.success}
+                    message="The employee has been successfully edited"
                 />
-                <ErrorMessage errors={this.state.errors} />
+                <ErrorMessage errors={this.props.employees.errors} />
 
                 <FormTitle title='Edit Employee' />
                 <form onSubmit={this.handleSubmit}>
@@ -123,7 +98,7 @@ export default class EmployeesEdit extends Component {
                         title='Company'
                         name='companies_id'
                         value={this.state.companies_id}
-                        data={this.state.companiesList}
+                        data={this.props.companies.data}
                         onChange={this.handleChange}
                     />
                     <TextInput
@@ -145,3 +120,21 @@ export default class EmployeesEdit extends Component {
         );
     }
 }
+
+
+const mapStateToProps = state => {
+    return {
+        employees: state.employees,
+        companies: state.companies
+    };
+};
+
+const mapDispatchToProps = dispatch => {
+    return {
+        updateEmployee: (id, data) => dispatch(updateEmployee(id, data)),
+        showEmployee: id => dispatch(showEmployee(id)),
+        getAllCompanies: dispatch(getAllCompanies())
+    };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(EmployeesEdit);

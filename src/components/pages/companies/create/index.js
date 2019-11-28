@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import {connect} from "react-redux";
 import "./index.scss";
-import Api from "api";
 import ErrorMessage from "components/base-components/error-message";
 import SuccessMessage from "components/base-components/success-message";
 import BackLink from "components/base-components/back-link";
@@ -12,7 +11,6 @@ import FormTitle from "components/base-components/form-title";
 import { createCompany } from "store/actions/companies";
 
 class CompaniesCreate extends Component {
-    api = new Api();
     refLogoFile = React.createRef();
     state = {
         name: "",
@@ -26,9 +24,9 @@ class CompaniesCreate extends Component {
         this.props.companies.errors = [];
     }
 
-    handleSubmit = e => {
+    handleSubmit = async e => {
         e.preventDefault();
-        this.props.createCompany(this.state);
+        await this.props.createCompany(this.state);
     };
     handleChange = e => {
         let value = e.target.value;
@@ -40,9 +38,24 @@ class CompaniesCreate extends Component {
             [name]: value
         });
     };
+    UNSAFE_componentWillReceiveProps(nextProps) {
+        if(nextProps.companies.success) {
+            nextProps.companies.errors = [];
+            this.setState({
+                name: "",
+                email: "",
+                website: "",
+                logo: "",
+            });
+            this.refLogoFile.value = '';
+        }
+    }
 
-    render() {
+
+
+    render(){
         const {success , errors} = this.props.companies;
+
         return (
             <div className="container mt-5">
                 <BackLink url='/companies'/>
@@ -65,6 +78,7 @@ class CompaniesCreate extends Component {
                         name='email'
                         value={this.state.email}
                         onChange={this.handleChange}
+                        type='email'
                     />
                     <FileInput
                         title='Logo'
@@ -95,9 +109,6 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
     return {
         createCompany: data => dispatch(createCompany(data))
-        /*  onDelete: id => {
-          dispatch(deletePost(id));
-        } */
     };
 };
 

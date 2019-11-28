@@ -1,61 +1,42 @@
 import React, { Component } from "react";
-import Api from "api";
 import "./index.scss";
 import BackLink from "components/base-components/back-link";
+import {showEmployee} from "store/actions/employees";
+import {showCompany} from "store/actions/companies";
+import {connect} from "react-redux";
 
-export default class EmployeesShow extends Component {
-    api = new Api();
-    state = {};
+class EmployeesShow extends Component {
+    end = false;
     componentDidMount() {
         const { id } = this.props.match.params;
         if (isNaN(id)) {
             this.props.history.push("/error-404");
         }
-        this.api
-            .getEmployee(id)
-            .then(response => {
-                if(response.status === 200){
-                    let data = {};
-                    Object.keys(response.data).map(key => {
-                        return (data[key] = response.data[key]);
-                    });
-                    this.setState({
-                        ...data
-                    });
-                    if (response.data.companies_id !== null) {
-                        this.api
-                            .getCompany(response.data.companies_id)
-                            .then(response => {
-                                if(response.status === 200){
-                                    this.setState({
-                                        company: response.data.name
-                                    });
-                                }
-                            })
-                            .catch(err => {
-                                console.error(err.response.data);
-                            });
-                    }
-                }
-            })
-            .catch(err => {
-                if (err.response.status === 404) {
-                    this.props.history.push("/error-404");
-                }
-                console.error(err.response.data);
-            });
+        this.props.showEmployee(id);
     }
+    componentDidUpdate() {
+        if(!this.props.employees.hasPage){
+            this.props.history.push('/error-404');
+        }
+    }
+    UNSAFE_componentWillReceiveProps(nextProps) {
+        const {companies_id} = nextProps.employees.data;
+        if(companies_id && this.end === false){
+            nextProps.showCompany(companies_id);
+            this.end = true;
+        }
+    }
+
 
     render() {
         const {
             first_name,
             last_name,
-            company,
             email,
             phone,
             created_at,
             updated_at
-        } = this.state;
+        } = this.props.employees.data;
         return (
             <div className="container employee-show-container">
                 <BackLink url='/employees'/>
@@ -64,7 +45,7 @@ export default class EmployeesShow extends Component {
                         <h1 className="text-center mb-3">
                             {first_name} {last_name}
                         </h1>
-                        <div className="text-center">Company : {company}</div>
+                        <div className="text-center">Company : {this.props.companies.data.name}</div>
                         <div className="text-center">
                             Email : <a href={`mailto:${email}`}>{email}</a>
                         </div>
@@ -83,3 +64,22 @@ export default class EmployeesShow extends Component {
         );
     }
 }
+
+
+
+
+const mapStateToProps = state => {
+    return {
+        employees: state.employees,
+        companies: state.companies
+    };
+};
+
+const mapDispatchToProps = dispatch => {
+    return {
+        showEmployee: id => dispatch(showEmployee(id)),
+        showCompany: id => dispatch(showCompany(id))
+    };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(EmployeesShow);

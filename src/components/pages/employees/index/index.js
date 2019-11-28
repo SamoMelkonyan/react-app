@@ -1,77 +1,28 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import "./index.scss";
-import Api from "api";
 import Paginate from "components/base-components/paginate";
 import SuccessMessage from "components/base-components/success-message";
+import ErrorMessage from "components/base-components/error-message";
 import EmployeesItem from "./item";
+import { getEmployees , deleteEmployee } from "store/actions/employees";
+import {connect} from "react-redux";
 
 
-export default class Employees extends Component {
-    api = new Api();
-    state = {
-        employees: {
-            data: [],
-            currentPage: null,
-            total: null,
-            removed: false
-        }
-    };
+class Employees extends Component {
     componentDidMount() {
-        this.api.getEmployees().then(res => {
-            this.setState({
-                employees: {
-                    data: res.data.data,
-                    currentPage: res.data.current_page,
-                    total: res.data.last_page,
-                    removed: false
-                }
-            });
-        });
+        this.props.getEmployees();
     }
-    paginate(page) {
-        this.api.getEmployees(page).then(res => {
-            this.setState({
-                employees: {
-                    data: res.data.data,
-                    currentPage: res.data.current_page,
-                    total: res.data.last_page,
-                    removed: false
-                }
-            });
-        });
-    }
-    deleteEmployee(id) {
-        if (!window.confirm("Are you sure?")) {
-            return false;
-        }
-        this.api
-            .destroyEmployee(id)
-            .then(response => {
-                if(response.status === 200){
-                    let data = [...this.state.employees.data];
-                    data = data.filter(employee => employee.id !== id);
-                    this.setState({
-                        employees: {
-                            ...this.state.employees,
-                            data,
-                            removed: true
-                        }
-                    });
-                }
-            })
-            .catch(err => {
-                console.error(err.response.data);
-            });
-    }
+
     render() {
-        const { data, total, currentPage, removed } = this.state.employees;
+        const {data : {last_page , current_page , data} , success , errors} = this.props.employees;
         return (
             <div className="container employees-container mt-5">
                 <SuccessMessage
                     message="The employee has been successfully removed"
-                    success={removed}
+                    success={success}
                 />
+                <ErrorMessage errors={errors} />
                 <Link to="/employees/create" className="btn btn-success mb-1">
                     Add Employee
                 </Link>
@@ -91,7 +42,12 @@ export default class Employees extends Component {
                         <tbody>
                             <EmployeesItem
                                 items={data}
-                                delete={id => this.deleteEmployee(id)}
+                                delete={id => {
+                                    if(!window.confirm('Are you sure?')){
+                                        return false
+                                    }
+                                    return this.props.deleteEmployee(id)
+                                }}
                             />
                         </tbody>
                     </table>
@@ -100,9 +56,9 @@ export default class Employees extends Component {
                     <nav aria-label="Page navigation example">
                         <ul className="pagination">
                             <Paginate
-                                total={total}
-                                currentPage={currentPage}
-                                click={page => this.paginate(page)}
+                                total={last_page}
+                                currentPage={current_page}
+                                click={page => this.props.getEmployees(page)}
                             />
                         </ul>
                     </nav>
@@ -111,3 +67,18 @@ export default class Employees extends Component {
         );
     }
 }
+
+const mapStateToProps = state => {
+    return {
+        employees: state.employees
+    };
+};
+
+const mapDispatchToProps = dispatch => {
+    return {
+        getEmployees: page => {dispatch(getEmployees(page))},
+        deleteEmployee: id => {dispatch(deleteEmployee(id))}
+    };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Employees);

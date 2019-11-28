@@ -4,6 +4,7 @@ import {
     UPDATE_COMPANY,
     DELETE_COMPANY,
     SHOW_COMPANY,
+    GET_ALL_COMPANIES,
 } from "./types";
 import Api from "api";
 
@@ -24,6 +25,24 @@ export const getCompanies = (page = 1) => {
                 .catch(error => {
                     throw error;
                 });
+    };
+};
+
+export const getAllCompanies =  () => {
+    return dispatch => {
+        api
+            .getAllCompanies()
+            .then(response => {
+                dispatch(
+                    {
+                        type: GET_ALL_COMPANIES,
+                        payload: response.data
+                    }
+                );
+            })
+            .catch(error => {
+                throw error;
+            });
     };
 };
 
@@ -61,6 +80,67 @@ export const createCompany = (data) => {
     };
 };
 
+export const showCompany = (id) => {
+    return dispatch => {
+        api
+            .getCompany(id)
+            .then(response => {
+                dispatch(
+                    {
+                        type: SHOW_COMPANY,
+                        payload: response
+                    }
+                );
+            })
+            .catch(error => {
+                if(error.response.status === 404) {
+                    dispatch(
+                        {
+                            type: SHOW_COMPANY,
+                            payload: error.response
+                        }
+                    );
+                }
+            });
+    };
+};
+
+
+
+export const updateCompany = (id , data) => {
+    const formData = new FormData();
+    formData.append("name", data.name);
+    formData.append("email", data.email);
+    formData.append("website", data.website);
+    formData.append("_method", "PUT");
+    if (data.logo) {
+        formData.append("logo", data.logo);
+    }
+
+
+    return dispatch => {
+        api.updateCompany(id , formData)
+            .then(response => {
+                dispatch(
+                    {
+                        type: UPDATE_COMPANY,
+                        payload: response
+                    }
+                );
+            })
+            .catch(error => {
+                if(error.response.status === 422) {
+                    dispatch(
+                        {
+                            type: UPDATE_COMPANY,
+                            payload: error.response
+                        }
+                    );
+                }
+            });
+    };
+};
+
 
 
 export const deleteCompany = (id) => {
@@ -76,7 +156,7 @@ export const deleteCompany = (id) => {
                 );
             })
             .catch(error => {
-                if(error.response.status === 422) {
+                if(error.response && error.response.status === 422) {
                     dispatch(
                         {
                             type: DELETE_COMPANY,

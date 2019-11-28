@@ -17,7 +17,6 @@ class Companies extends Component {
 
     render() {
         const {data : {last_page , current_page , data} , success , errors} = this.props.companies;
-
         return (
             <div className="container companies-container mt-5">
                 <SuccessMessage

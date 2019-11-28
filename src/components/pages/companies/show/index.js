@@ -2,34 +2,23 @@ import React, { Component } from "react";
 import Api from "api";
 import "./index.scss";
 import BackLink from "components/base-components/back-link";
+import {showCompany} from "store/actions/companies";
+import {connect} from "react-redux";
 
-export default class CompaniesShow extends Component {
+class CompaniesShow extends Component {
     api = new Api();
-    state = {};
+
     componentDidMount() {
         const { id } = this.props.match.params;
         if (isNaN(id)) {
             this.props.history.push("/error-404");
         }
-        this.api
-            .getCompany(id)
-            .then(response => {
-                if(response.status === 200){
-                    let data = {};
-                    Object.keys(response.data).map(key => {
-                        return (data[key] = response.data[key]);
-                    });
-                    this.setState({
-                        ...data
-                    });
-                }
-            })
-            .catch(err => {
-                if (err.response.status === 404) {
-                    this.props.history.push("/error-404");
-                }
-                console.error(err.response.data);
-            });
+        this.props.showCompany(id)
+    }
+    componentDidUpdate() {
+        if(!this.props.companies.hasPage){
+            this.props.history.push('/error-404');
+        }
     }
 
     render() {
@@ -39,8 +28,8 @@ export default class CompaniesShow extends Component {
             website,
             logo,
             created_at,
-            updated_at
-        } = this.state;
+            updated_at,
+        } = this.props.companies.data;
         return (
             <div className="container company-show-container">
                 <BackLink url='/companies'/>
@@ -77,3 +66,19 @@ export default class CompaniesShow extends Component {
         );
     }
 }
+
+
+
+const mapStateToProps = state => {
+    return {
+        companies: state.companies
+    };
+};
+
+const mapDispatchToProps = dispatch => {
+    return {
+        showCompany: id => dispatch(showCompany(id))
+    };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(CompaniesShow);
