@@ -47,7 +47,7 @@ class CompaniesCreate extends Component {
                 website: "",
                 logo: "",
             });
-            this.refLogoFile.value = '';
+            this.refLogoFile.current.value = '';
         }
     }
 
