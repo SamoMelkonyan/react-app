@@ -47,6 +47,10 @@ class CompaniesEdit extends Component {
         }
         this.props.showCompany(id);
     }
+    componentWillUnmount() {
+        this.props.companies.success = false;
+        this.props.companies.errors = [];
+    }
 
     componentDidUpdate() {
         if(!this.props.companies.hasPage){

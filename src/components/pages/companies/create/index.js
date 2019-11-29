@@ -23,6 +23,10 @@ class CompaniesCreate extends Component {
         this.props.companies.success = false;
         this.props.companies.errors = [];
     }
+    componentWillUnmount() {
+        this.props.companies.success = false;
+        this.props.companies.errors = [];
+    }
 
     handleSubmit = async e => {
         e.preventDefault();
@@ -54,6 +58,7 @@ class CompaniesCreate extends Component {
 
 
     render(){
+        console.log(this.props);
         const {success , errors} = this.props.companies;
 
         return (

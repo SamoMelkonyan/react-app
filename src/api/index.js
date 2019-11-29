@@ -76,6 +76,13 @@ export default class Api {
             }
         });
     }
+    getAllEmployees() {
+        return this.Auth.get(`${this._apiURL}employees/all` , {
+            headers: {
+                'Authorization': `bearer  ${this.getToken()}`
+            }
+        });
+    }
     getEmployee(id) {
         return this.Auth.get(`${this._apiURL}employees/${id}` , {
             headers: {

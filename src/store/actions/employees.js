@@ -4,6 +4,7 @@ import {
     UPDATE_EMPLOYEE,
     DELETE_EMPLOYEE,
     SHOW_EMPLOYEE,
+    GET_ALL_EMPLOYEES,
 } from "./types";
 import Api from "api";
 
@@ -17,6 +18,25 @@ export const getEmployees = (page = 1) => {
                 dispatch(
                     {
                         type: GET_EMPLOYEES,
+                        payload: response.data
+                    }
+                );
+            })
+            .catch(error => {
+                throw error;
+            });
+    };
+};
+
+
+export const getAllEmployees =  () => {
+    return dispatch => {
+        api
+            .getAllEmployees()
+            .then(response => {
+                dispatch(
+                    {
+                        type: GET_ALL_EMPLOYEES,
                         payload: response.data
                     }
                 );

@@ -80,7 +80,7 @@ class EmployeesCreate extends Component {
                         title='Company'
                         name='companies_id'
                         value={this.state.companies_id}
-                        data={this.props.companies.data}
+                        data={this.props.companies.allData}
                         onChange={this.handleChange}
                     />
                     <TextInput

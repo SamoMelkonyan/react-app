@@ -14,6 +14,11 @@ class Companies extends Component {
     componentDidMount() {
         this.props.getCompanies();
     }
+    componentWillUnmount() {
+        this.props.companies.success = false;
+        this.props.companies.errors = [];
+        console.log(this.props.companies.success)
+    }
 
     render() {
         const {data : {last_page , current_page , data} , success , errors} = this.props.companies;

@@ -4,10 +4,12 @@ import {
     UPDATE_EMPLOYEE,
     DELETE_EMPLOYEE,
     SHOW_EMPLOYEE,
+    GET_ALL_EMPLOYEES
 } from "../actions/types";
 
 const initialState = {
     data: [],
+    allData: [],
     errors: [],
     success: false,
     hasPage: true,
@@ -16,9 +18,13 @@ const initialState = {
 export default function companiesReducer(state = initialState, action) {
     switch (action.type) {
         case GET_EMPLOYEES:
-            return { ...state, data: action.payload , success: false, errors: [] };
+            return { ...state, data: action.payload, errors: [] };
+        case GET_ALL_EMPLOYEES:
+            return { ...state, allData: action.payload, errors: [] };
         case CREATE_EMPLOYEE:
             if(action.payload.status === 200) {
+                const {allData} = state;
+                allData.push(action.payload.data);
                 return {...state , success: true};
             }
             if(action.payload.status === 422) {
@@ -54,8 +60,10 @@ export default function companiesReducer(state = initialState, action) {
                 return {...state, errors: Object.values(action.payload.data.errors) , success: false};
             }else{
                 const {data , ...other} = state.data;
-                const new_data = data.filter(company => company.id !== action.payload.id);
-                return {...state, data : {data : new_data , ...other}, success: true};
+                const {allData} = state;
+                const new_data = data.filter(employee => employee.id !== action.payload.id);
+                const new_allData = allData.filter(employee => employee.id !== action.payload.id);
+                return {...state, data : {data : new_data , ...other}, allData: new_allData, success: true};
             }
         default:
             return state;
